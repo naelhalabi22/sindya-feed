@@ -1,0 +1,48 @@
+
+name: Publish Sindya product feed
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * *'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Download Cashcow feed and convert to CSV
+        run: |
+          mkdir -p public
+          python sindya_feed_converter.py \
+            --url 'https://www.sindya.co.il/crowlers/GoogleMerchantFeed' \
+            --output public/sindya_openai_products.csv \
+            --rejected public/sindya_openai_products_rejected.csv
+          test $(wc -l < public/sindya_openai_products.csv) -gt 100
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
