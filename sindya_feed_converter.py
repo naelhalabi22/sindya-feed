@@ -155,7 +155,7 @@ def convert(source, output, rejected):
 def download(url, path):
     if not http_url(url) or not url.lower().startswith('https://'):
         raise ValueError('Source URL must use HTTPS and contain no credentials')
-    req=Request(url,headers={'User-Agent':'SindyaFeedConverter/1.0','Accept':'application/xml, text/xml, */*'})
+    req=Request(url,headers={'User-Agent':'Mozilla/5.0','Accept':'application/xml, text/xml, */*'})
     with urlopen(req,timeout=90) as response, open(path,'wb') as out:
         size=0
         while True:
